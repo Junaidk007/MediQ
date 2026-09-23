@@ -184,7 +184,7 @@ Result:
 
 > ⚠️ Your check-in window has expired. Please contact reception.
 
-The clinic can define the valid check-in window according to its workflow.
+The clinic can define the valid check-in window according to its workflow (stored as a clinic setting, for example 15 minutes before and after the appointment).  Validation always runs on the server using server time. The patient's phone clock is never trusted. Times are stored in UTC and shown in IST.
 
 ---
 
@@ -288,6 +288,13 @@ Token ID
 
 The token should not be confused with the patient's permanent identity.
 
+### Token and check-in rules
+
+* Tokens are counted per doctor per day (for example Dr. Sharma: A-01, A-02…; Dr. Verma: B-01…). The database allows only one of each token number per doctor per day, so two patients checking in at the same moment can never get the same token.
+* Scanning the QR again after checking in shows the same token. It never creates a second one.
+* Check-in is one database update: it saves `checked_in_at`, assigns the token and sets the status to IN_QUEUE together. CHECKED_IN is recorded as the `checked_in_at` time, so a patient can never get stuck between the two states.
+* Every visit stores its `doctor_id`, even with one doctor, so adding more doctors later needs no rework.
+
 ---
 
 ## 6. Patient State Management
@@ -311,9 +318,10 @@ DONE
 ### Exception states
 
 ```text
-IN_QUEUE → NO_SHOW
-IN_QUEUE → CANCELLED
-IN_QUEUE → URGENT
+BOOKED   → CANCELLED   (patient or reception cancels before arriving)
+IN_QUEUE → CANCELLED   (reception)
+IN_QUEUE → NO_SHOW     (called but not present)
+NO_SHOW  → IN_QUEUE    (arrives late; rejoins at the end of the queue)
 ```
 
 ### State meaning
@@ -348,7 +356,9 @@ The appointment/visit has been cancelled.
 
 #### URGENT
 
-An exceptional medical situation has been identified by clinic/medical staff and requires separate handling.
+#### URGENT (a flag, not a state)
+
+Urgent is saved as an `is_urgent` flag on a patient who is IN_QUEUE. The patient stays IN_QUEUE and moves to the front of that doctor's queue. If URGENT were a separate state, the patient would drop out of the waiting list and could never reach CHECK_UP.
 
 > The system does not independently decide whether a patient is medically urgent. The urgent state is a clinic/medical-staff action.
 
@@ -368,7 +378,7 @@ The MVP should clearly define who is responsible for changing each state.
 | DONE | Doctor |
 | NO_SHOW | Reception |
 | CANCELLED | Patient / Reception |
-| URGENT | Authorized clinic/medical staff |
+| Mark as urgent (flag) | Reception / Doctor |
 
 The principle is:
 
@@ -396,7 +406,11 @@ Doctor is available to see patients.
 
 ### IN_CONSULTATION
 
-Doctor is currently consulting a patient.
+### IN_CONSULTATION
+
+Doctor is currently consulting a patient. This is not saved separately: the doctor is IN_CONSULTATION whenever one of their patients is in CHECK_UP. The saved doctor status is only AVAILABLE, ON_BREAK, ON_LEAVE or OFFLINE.
+
+A doctor can go ON_BREAK only when none of their patients is in CHECK_UP.
 
 ### ON_BREAK
 
@@ -587,9 +601,13 @@ The MVP includes only essential patient information.
 
 Basic vitals:
 
-* Blood Pressure
-* Blood Sugar
-* Weight
+Basic vitals (saved on each visit, not on the patient, so a new visit never overwrites old values):
+
+* Blood Pressure: two numbers, systolic and diastolic (mmHg)
+* Blood Sugar: a number (mg/dL)
+* Weight: a number (kg)
+
+Saving them as numbers (not text like "120/80") lets the app catch typos and draw history charts later.
 
 Example:
 
@@ -620,7 +638,7 @@ Detailed medical records, prescriptions, reports, and historical health analytic
 
 ## 13. Start Consultation
 
-When the doctor is ready for the next patient, the next eligible patient moves into consultation.
+When the doctor is ready for the next patient, the next eligible patient moves into consultation.  Rules:  * A doctor can have only one patient in CHECK_UP at a time. "Start Consultation" is rejected if one is already in progress, so a double tap or a second open tab cannot start two consultations. * "Complete Consultation" only sets the current patient to DONE. The next patient moves to CHECK_UP only when the doctor taps "Start Consultation". * Messages: #1 in the queue sees "You're next". CHECK_UP sees "Your turn".
 
 Example:
 
@@ -661,7 +679,9 @@ Room 1
 
 ## 14. Consultation Timer
 
-When the patient enters `CHECK_UP`, a timer begins.
+When the patient enters `CHECK_UP`, the system saves `consult_started_at`. When the doctor completes the consultation, it saves `consult_ended_at`.
+
+The timer on screen is calculated as "now − consult_started_at". It is not a counter running in the browser, so refreshing or closing the page does not reset it or lose the duration.
 
 Example:
 
@@ -712,9 +732,16 @@ A-17 → IN_QUEUE
 
 After A-15 completes:
 
+After A-15 completes:
+
 A-15 → DONE
-A-16 → CHECK_UP
+A-16 → IN_QUEUE   (now #1: "You're next")
 A-17 → IN_QUEUE
+
+After the doctor taps Start Consultation:
+
+A-16 → CHECK_UP   ("Your turn")
+A-17 → IN_QUEUE   (now #1)
 ```
 
 Patient A-17 automatically moves from:
@@ -763,7 +790,11 @@ Patient A-17 immediately sees:
 
 > **You are #1 in queue.**
 
-When A-16 completes:
+When A-16 completes, A-17 becomes #1 and sees:
+
+> **You're next. Please be ready.**
+
+When the doctor taps Start Consultation for A-17:
 
 ```text
 A-16 → DONE
@@ -772,7 +803,7 @@ A-17 → CHECK_UP
 
 Patient A-17 sees:
 
-> 🔔 **You're next. Please proceed to the consultation room.**
+> 🔔 **Your turn. Please proceed to the consultation room.**
 
 No manual refresh should be required.
 
@@ -810,6 +841,19 @@ A basic estimate may start around:
 ```text
 3 × 10 = 30 minutes
 ```
+
+The formula used by the MVP:
+
+```text
+average   = average of this doctor's last 10 completed consultations
+            (use 10 min until there are at least 5 completed consultations)
+remaining = max(average − time spent on the current consultation, 2 min)
+estimate  = remaining + (patients ahead × average)
+
+Show: estimate × 0.8  to  estimate × 1.3   (rounded to 5 min)
+```
+
+If the doctor is ON_BREAK, ON_LEAVE or OFFLINE, show only the doctor status message, not a time.
 
 The UI should present a range:
 
@@ -920,6 +964,8 @@ Reception should have limited controls for:
 The purpose is not to build a complex hospital emergency system.
 
 The purpose is simply to ensure the digital queue can be corrected when the physical clinic workflow requires it.
+
+A walk-in has no appointment. Reception creates a visit with no appointment attached, and it goes straight to IN_QUEUE with a token. This is why the status, token and times are stored on the visit, not on the appointment.
 
 ----
 
@@ -1261,9 +1307,10 @@ stateDiagram-v2
     CHECK_UP --> DONE: Complete Consultation
     DONE --> [*]
 
+    BOOKED --> CANCELLED: Cancelled Before Arrival
+    IN_QUEUE --> CANCELLED: Reception Cancel
     IN_QUEUE --> NO_SHOW: Called but Not Present
-    IN_QUEUE --> CANCELLED: Patient / Reception Cancel
-    IN_QUEUE --> URGENT: Clinical Priority Override
+    NO_SHOW --> IN_QUEUE: Late Arrival Re-queued
 ```
 
 The complete patient state machine:
@@ -1378,6 +1425,11 @@ A-16 → #2
 ```
 
 This is the core mechanism behind the real-time queue.
+
+Rules:
+
+* Queue position is never saved in the database. It is calculated each time from today's IN_QUEUE visits for that doctor, ordered by `is_urgent` first, then `checked_in_at`. A saved position would go wrong as soon as someone ahead is marked NO_SHOW or CANCELLED.
+* The patient screen receives only token numbers, counts and the estimate. It never receives other patients' names or vitals. Names and vitals go only to the reception and doctor dashboards.
 
 ----
 
@@ -1496,6 +1548,8 @@ The MVP has three primary roles.
 
 The system should keep each role focused on its actual responsibility.
 
+Every role logs in, and the server checks the role on every action. Patients can only see and cancel their own appointments. Reception can manage only its own clinic's queue. A doctor can only start or complete consultations for their own patients.
+
 ### Patient
 
 > "Where am I in the queue?"
@@ -1589,3 +1643,23 @@ NEXT PATIENT
 **MediQ is therefore not primarily an appointment-booking product.**
 
 It is a **real-time clinic queue management system built around the patient's actual journey from appointment to consultation.**
+
+
+----
+
+# Database Tables
+
+| Table | Fields |
+|---|---|
+| users | id, name, phone, password (hashed), role (patient, reception, doctor) |
+| doctors | id, user_id, room, status (AVAILABLE, ON_BREAK, ON_LEAVE, OFFLINE) |
+| clinic_settings | check_in_before_min, check_in_after_min, default_consult_min |
+| appointments | id, patient_id, doctor_id, date, time, type (NEW, FOLLOW_UP), status (BOOKED, CANCELLED) |
+| visits | id, appointment_id (empty for walk-ins), patient_id, doctor_id, visit_date, token_no, status (IN_QUEUE, CHECK_UP, DONE, NO_SHOW, CANCELLED), is_urgent, checked_in_at, consult_started_at, consult_ended_at, bp_systolic, bp_diastolic, sugar, weight |
+
+Rules:
+
+* `visits` has one unique token per doctor per day (doctor_id + visit_date + token_no).
+* `visits` allows only one visit per appointment, so the same appointment cannot be checked in twice.
+* The Patient ID shown as "P-1024" is `users.id` with a "P-" prefix.
+* For a walk-in without an account, reception creates the patient record first.
