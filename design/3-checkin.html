@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QureFlow — Screen 3: QR Arrival Check-In</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Screen 3 Layout */
+    .app-header {
+      background: var(--color-primary-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-accent-black);
+    }
+
+    .header-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      border-radius: var(--radius-unified);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .checkin-container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-4) 80px;
+      text-align: center;
+    }
+
+    /* Appointment Info Banner Card */
+    .appt-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-4);
+      margin-bottom: var(--space-6);
+      box-shadow: var(--shadow-card);
+      text-align: left;
+    }
+
+    .appt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .appt-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    /* Camera QR Scanner Simulation Reticle */
+    .scanner-viewport {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #0F172A;
+      border-radius: var(--radius-unified);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .scanner-reticle {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: var(--radius-unified);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Target Corner Accents */
+    .reticle-corner {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: var(--color-secondary-blue);
+      border-style: solid;
+    }
+    .corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+    .corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+    .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+    .corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+    /* Animated Laser Scanner Bar */
+    .scanner-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #3B82F6, #60A5FA, transparent);
+      box-shadow: 0 0 8px #3B82F6;
+      animation: scanAnim 2.2s ease-in-out infinite;
+    }
+
+    @keyframes scanAnim {
+      0%, 100% { top: 10%; }
+      50% { top: 90%; }
+    }
+
+    .scanner-instruction {
+      position: absolute;
+      bottom: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px 12px;
+      border-radius: var(--radius-unified);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Manual Code Entry Accordion/Toggle */
+    .manual-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-secondary-blue);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: var(--space-6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .manual-toggle-btn:hover {
+      text-decoration: underline;
+    }
+
+    .manual-code-box {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      display: none;
+      text-align: left;
+    }
+
+    /* Full-Screen / Modal Success Token Pass */
+    .token-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+
+    .token-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-unified);
+      max-width: 440px;
+      width: 100%;
+      padding: var(--space-6);
+      text-align: center;
+      box-shadow: var(--shadow-elevated);
+      animation: tokenPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes tokenPop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .token-badge-hero {
+      display: inline-block;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      padding: 8px 24px;
+      border-radius: var(--radius-unified);
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 16px 0 12px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky State Simulator Bar -->
+  <aside class="state-controller-bar" aria-label="Interactive State Controller">
+    <div class="title">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;"></span>
+      <strong>Screen 3: QR Arrival Check-In</strong>
+      <span class="badge badge-blue">Patient Tier</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div class="pill-group" title="Switch UI Simulation States">
+        <span style="font-size: 11px; color: #94A3B8; padding-left: 6px;">STATE:</span>
+        <button class="state-btn active" id="state-normal-btn" onclick="setCheckinState('normal')">Interactive Scan</button>
+        <button class="state-btn" id="state-loading-btn" onclick="setCheckinState('loading')">Validating</button>
+        <button class="state-btn" id="state-empty-btn" onclick="setCheckinState('empty')">Empty (No Appt)</button>
+        <button class="state-btn" id="state-error-btn" onclick="setCheckinState('error')">Error (Window)</button>
+        <button class="state-btn" id="state-success-btn" onclick="setCheckinState('success')">Success (Token)</button>
+      </div>
+
+      <div class="pill-group">
+        <a href="2-booking.html" class="state-btn" style="text-decoration:none;">← Screen 2</a>
+        <a href="4-queue.html" class="state-btn" style="text-decoration:none;">Screen 4 →</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <a href="2-booking.html" class="header-brand">
+      <div class="header-logo-icon">Q</div>
+      <strong style="font-family: var(--font-heading); font-size: 18px;">QureFlow</strong>
+    </a>
+    <div class="user-pill">
+      <span>📍 Apollo Main OPD — Entrance Desk</span>
+    </div>
+  </header>
+
+  <!-- Main Viewport Canvas -->
+  <main class="checkin-container">
+
+    <!-- Active Appointment Preview Card -->
+    <div class="appt-card" id="appt-card">
+      <div class="appt-header">
+        <span class="text-small" style="color:var(--color-accent-muted);">TODAY'S APPOINTMENT (#BK-9042)</span>
+        <span class="badge badge-green" id="window-status-pill">● Check-In Open (±15m)</span>
+      </div>
+
+      <h2 style="font-size: 17px; margin-bottom: 6px;">Dr. Rajesh Sharma</h2>
+      <div class="appt-details-grid">
+        <div>
+          <span style="color:var(--color-accent-muted);">Scheduled Slot:</span><br>
+          <strong id="appt-time">Today • 11:00 AM</strong>
+        </div>
+        <div>
+          <span style="color:var(--color-accent-muted);">Arrival Window:</span><br>
+          <strong id="appt-window">10:45 AM – 11:15 AM</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Alert Box -->
+    <div id="checkin-alert" style="display:none; margin-bottom: var(--space-4);">
+      <div class="alert alert-error" id="checkin-alert-text">
+        ⚠️ Check-in Rejected: You are outside the permitted 15-minute arrival window. Please contact reception.
+      </div>
+    </div>
+
+    <!-- QR Camera Viewfinder Simulator -->
+    <div id="scanner-wrapper">
+      <div class="scanner-viewport" id="scanner-viewport">
+        <!-- Mock Camera Background & Reticle -->
+        <div class="scanner-reticle">
+          <div class="reticle-corner corner-tl"></div>
+          <div class="reticle-corner corner-tr"></div>
+          <div class="reticle-corner corner-bl"></div>
+          <div class="reticle-corner corner-br"></div>
+          <div class="scanner-beam"></div>
+          <span style="font-size: 48px; opacity: 0.35;">📷</span>
+        </div>
+        <div class="scanner-instruction" id="scanner-instruction">
+          Align clinic reception QR code within the frame
+        </div>
+      </div>
+
+      <!-- THE ONE PRIMARY ACTION (CTA) -->
+      <button id="primary-scan-cta" class="btn btn-primary btn-block" style="margin-bottom: var(--space-3);" onclick="simulateQrScan()">
+        <span id="scan-cta-text">Scan Clinic QR Code</span>
+      </button>
+    </div>
+
+    <!-- Fallback Manual Entry -->
+    <div>
+      <button class="manual-toggle-btn" onclick="toggleManualCode()">
+        <span>⌨️</span> Can't scan QR? Enter 6-digit clinic code
+      </button>
+
+      <div class="manual-code-box" id="manual-code-box">
+        <label class="form-label" for="manual-code-input">Clinic Standee Code</label>
+        <div style="display:flex; gap: 8px;">
+          <input type="text" id="manual-code-input" class="form-input" placeholder="e.g. APL-102" maxlength="7" style="text-transform:uppercase;" />
+          <button class="btn btn-secondary" onclick="submitManualCode()">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZERO / EMPTY STATE (Hidden by default) -->
+    <div id="empty-appt-state" class="card" style="display:none; text-align:center; padding: 48px 24px;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🏥</div>
+      <h3 style="font-size: 18px; margin-bottom: 6px;">No Active Booking Found Today</h3>
+      <p class="body-text" style="max-width: 360px; margin: 0 auto 20px;">
+        You don't have a booked slot for today at this clinic. You can book an appointment or approach reception for walk-in registration.
+      </p>
+      <a href="2-booking.html" class="btn btn-primary" style="text-decoration:none;">
+        Book an Appointment (Screen 2)
+      </a>
+    </div>
+
+  </main>
+
+  <!-- SUCCESS TOKEN MODAL (Screen 3 Success State) -->
+  <div class="token-modal" id="token-success-modal" style="display: none;">
+    <div class="token-card">
+      <div class="badge badge-green" style="margin-bottom: 8px;">
+        ✓ Arrival Verified at Reception
+      </div>
+      <h2 style="font-size: 20px;">Your Live Queue Token</h2>
+      <p class="body-text" style="font-size: 13px;">
+        You have officially entered Dr. Rajesh Sharma's physical queue.
+      </p>
+
+      <!-- The Token ID Hero -->
+      <div class="token-badge-hero" id="minted-token">#A-14</div>
+
+      <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-unified); padding: 12px; font-size: 13px; text-align: left; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+          <span style="color:var(--color-accent-muted);">Queue Position:</span>
+          <strong>4th in line</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+          <span style="color:var(--color-accent-muted);">Estimated Wait:</span>
+          <strong style="color:var(--color-secondary-blue);">25 – 35 mins</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:var(--color-accent-muted);">Room:</span>
+          <strong>Room 102 (OPD Ground Floor)</strong>
+        </div>
+      </div>
+
+      <!-- PROGRESSION PRIMARY CTA TO SCREEN 4 -->
+      <a href="4-queue.html" class="btn btn-primary btn-block" style="text-decoration:none; margin-bottom: 8px;">
+        Track Live Queue (Screen 4) →
+      </a>
+      <button class="btn btn-ghost btn-block" onclick="closeTokenModal()">
+        Stay on Check-In Screen
+      </button>
+    </div>
+  </div>
+
+  <script src="js/3-checkin.js"></script>
+</body>
+</html>

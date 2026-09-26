@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QureFlow — Screen 1: Authentication & Role Gateway</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Screen 1 Specific Layout & Component Styles */
+    .auth-container {
+      min-height: calc(100vh - 54px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6) var(--space-4);
+    }
+
+    .auth-wrapper {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    /* Logo & Branding */
+    .brand-header {
+      margin-bottom: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-secondary-light);
+      border: 1px solid var(--color-secondary-border);
+      color: var(--color-secondary-blue);
+      padding: 4px 12px;
+      border-radius: var(--radius-unified);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-logo {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-accent-black);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      border-radius: var(--radius-unified);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    /* Role Segmented Switcher */
+    .role-segmented-control {
+      display: flex;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: var(--radius-unified);
+      margin-bottom: var(--space-6);
+      border: 1px solid var(--color-border);
+    }
+
+    .role-segment-btn {
+      flex: 1;
+      height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .role-segment-btn.active {
+      background: #FFFFFF;
+      color: var(--color-accent-black);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Phone Input with Prefix Badge */
+    .phone-input-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .phone-prefix {
+      height: 44px;
+      padding: 0 12px;
+      background: #F8FAFC;
+      border: 1px solid var(--color-border);
+      border-right: none;
+      border-radius: var(--radius-unified) 0 0 var(--radius-unified);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+
+    .phone-input-group .form-input {
+      border-radius: 0 var(--radius-unified) var(--radius-unified) 0;
+    }
+
+    /* 6-Digit OTP Box Grid */
+    .otp-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin: var(--space-4) 0;
+    }
+
+    .otp-field {
+      width: 100%;
+      height: 48px;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      background: var(--color-primary-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      color: var(--color-accent-black);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .otp-field:focus {
+      border-color: var(--color-secondary-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .otp-field.is-error {
+      border-color: var(--color-error);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+    }
+
+    /* Timer & Resend Link */
+    .resend-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--color-accent-muted);
+      margin-bottom: var(--space-4);
+    }
+
+    .resend-link {
+      color: var(--color-secondary-blue);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .resend-link.disabled {
+      color: #94A3B8;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    /* Staff Staff Pill Selector */
+    .staff-subrole-selector {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .subrole-pill {
+      flex: 1;
+      height: 38px;
+      border: 1px solid var(--color-border);
+      background: #FAFAFC;
+      border-radius: var(--radius-unified);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .subrole-pill.active {
+      border-color: var(--color-secondary-blue);
+      background: var(--color-secondary-light);
+      color: var(--color-secondary-blue);
+    }
+
+    /* Subtle Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #FFFFFF;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer Privacy Microcopy */
+    .auth-footer {
+      margin-top: var(--space-6);
+      font-size: 12px;
+      color: #94A3B8;
+      line-height: 1.4;
+    }
+
+    .auth-footer a {
+      color: var(--color-accent-muted);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky State Simulator Bar (For UX & QA Review) -->
+  <aside class="state-controller-bar" aria-label="Interactive State Controller">
+    <div class="title">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;"></span>
+      <strong>Screen 1: Authentication & Role Gateway</strong>
+      <span class="badge badge-blue">Guest Tier</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div class="pill-group" title="Switch UI Simulation States">
+        <span style="font-size: 11px; color: #94A3B8; padding-left: 6px;">STATE:</span>
+        <button class="state-btn active" id="state-empty-btn" onclick="setScreenState('empty')">Empty (Initial)</button>
+        <button class="state-btn" id="state-loading-btn" onclick="setScreenState('loading')">Loading</button>
+        <button class="state-btn" id="state-error-btn" onclick="setScreenState('error')">Error</button>
+        <button class="state-btn" id="state-success-btn" onclick="setScreenState('success')">Success</button>
+      </div>
+
+      <div class="pill-group">
+        <span style="font-size: 11px; color: #94A3B8; padding-left: 6px;">ROLE:</span>
+        <button class="state-btn active" id="role-patient-btn" onclick="switchRole('patient')">Patient</button>
+        <button class="state-btn" id="role-staff-btn" onclick="switchRole('staff')">Clinic Staff</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Viewport Canvas -->
+  <main class="auth-container">
+    <div class="auth-wrapper">
+
+      <!-- Brand Identity -->
+      <header class="brand-header">
+        <div class="brand-badge">⚡ Real-Time Clinic Flow</div>
+        <div class="brand-logo">
+          <div class="brand-logo-icon">Q</div>
+          <span>QureFlow</span>
+        </div>
+        <p class="body-text" id="role-subtitle">Synchronized queue management for patients & clinics</p>
+      </header>
+
+      <!-- Main Auth Card -->
+      <section class="card" id="auth-card">
+
+        <!-- Role Segmented Control -->
+        <div class="role-segmented-control" role="tablist">
+          <button class="role-segment-btn active" id="tab-patient" role="tab" aria-selected="true" onclick="switchRole('patient')">
+            <span>👤</span> Patient (OTP)
+          </button>
+          <button class="role-segment-btn" id="tab-staff" role="tab" aria-selected="false" onclick="switchRole('staff')">
+            <span>🩺</span> Clinic Staff
+          </button>
+        </div>
+
+        <!-- Dynamic Feedback Alert Container -->
+        <div id="alert-box" style="display: none;"></div>
+
+        <!-- PATIENT AUTH FORM -->
+        <form id="patient-form" onsubmit="handlePatientSubmit(event)" novalidate>
+          
+          <!-- Step 1: Mobile Number Input -->
+          <div class="form-group" id="group-phone">
+            <label class="form-label" for="phone-input">Mobile Number</label>
+            <div class="phone-input-group">
+              <span class="phone-prefix">+91</span>
+              <input 
+                type="tel" 
+                id="phone-input" 
+                class="form-input" 
+                placeholder="Enter 10-digit mobile number" 
+                maxlength="10" 
+                autocomplete="tel" 
+                autofocus
+                oninput="onPhoneInput(this)"
+              />
+            </div>
+          </div>
+
+          <!-- Step 2: 6-Digit OTP Container (Shown after phone entered or in demo) -->
+          <div id="otp-section" style="display: none; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="form-label">Enter 6-Digit OTP Code</label>
+              <a href="javascript:void(0)" onclick="editPhoneNumber()" style="font-size: 12px; color: var(--color-secondary-blue); font-weight: 600;">Edit Number</a>
+            </div>
+            
+            <div class="otp-grid">
+              <input type="text" maxlength="1" class="otp-field" data-index="0" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-field" data-index="1" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-field" data-index="2" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-field" data-index="3" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-field" data-index="4" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-field" data-index="5" inputmode="numeric" />
+            </div>
+
+            <div class="resend-container">
+              <span>Didn't receive code?</span>
+              <span id="countdown-text">Resend in <strong id="timer-sec">28</strong>s</span>
+              <a href="javascript:void(0)" id="resend-link" class="resend-link disabled" onclick="resendOtp()">Resend OTP</a>
+            </div>
+          </div>
+
+          <!-- Single Primary Action (CTA) -->
+          <button type="submit" id="patient-primary-cta" class="btn btn-primary btn-block" disabled>
+            <span id="patient-cta-text">Get OTP & Continue</span>
+          </button>
+        </form>
+
+        <!-- CLINIC STAFF AUTH FORM (Hidden by default) -->
+        <form id="staff-form" onsubmit="handleStaffSubmit(event)" style="display: none;" novalidate>
+          
+          <!-- Clinic Select -->
+          <div class="form-group">
+            <label class="form-label" for="clinic-select">Select Clinic / Center</label>
+            <select id="clinic-select" class="form-select">
+              <option value="clinic-1">Apollo City Health Center — Main OPD</option>
+              <option value="clinic-2">Fortis Care Clinic — Sector 4</option>
+              <option value="clinic-3">Max PolyClinic — South Campus</option>
+            </select>
+          </div>
+
+          <!-- Staff Role Toggle -->
+          <div class="form-group">
+            <label class="form-label">Staff Role</label>
+            <div class="staff-subrole-selector">
+              <button type="button" class="subrole-pill active" id="subrole-doctor" onclick="selectStaffSubrole('DOCTOR')">
+                🩺 Doctor Console
+              </button>
+              <button type="button" class="subrole-pill" id="subrole-reception" onclick="selectStaffSubrole('RECEPTIONIST')">
+                🖥️ Reception Desk
+              </button>
+            </div>
+          </div>
+
+          <!-- Staff Email/Phone -->
+          <div class="form-group">
+            <label class="form-label" for="staff-id">Staff ID or Mobile</label>
+            <input type="text" id="staff-id" class="form-input" placeholder="e.g. dr.sharma or 9876543210" oninput="onStaffInput()" />
+          </div>
+
+          <!-- Password with toggle -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="form-label" for="staff-pass">Password</label>
+              <a href="javascript:void(0)" style="font-size:12px; color:var(--color-secondary-blue); font-weight:600;">Forgot?</a>
+            </div>
+            <div class="input-wrapper">
+              <input type="password" id="staff-pass" class="form-input" placeholder="Enter your staff password" oninput="onStaffInput()" />
+            </div>
+          </div>
+
+          <!-- Single Primary Action (CTA) for Staff -->
+          <button type="submit" id="staff-primary-cta" class="btn btn-primary btn-block" disabled>
+            <span id="staff-cta-text">Sign In to Clinic Desk</span>
+          </button>
+        </form>
+
+        <!-- Terms & Privacy Microcopy -->
+        <footer class="auth-footer">
+          By proceeding, you agree to QureFlow’s <a href="javascript:void(0)">Terms of Service</a> & <a href="javascript:void(0)">Patient Privacy Charter</a>.
+        </footer>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="js/1-auth.js"></script>
+</body>
+</html>

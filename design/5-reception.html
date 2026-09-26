@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QureFlow — Screen 5: Reception Queue & Triage Console</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Screen 5 Layout (Admin / Clinic Operations) */
+    .app-header {
+      background: var(--color-primary-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-accent-black);
+    }
+
+    .header-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      border-radius: var(--radius-unified);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .admin-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-secondary-light);
+      border: 1px solid var(--color-secondary-border);
+      padding: 4px 12px;
+      border-radius: var(--radius-unified);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-secondary-blue);
+    }
+
+    .reception-layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-6) 80px;
+    }
+
+    /* Top Stats Counters Strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    @media (max-width: 768px) {
+      .stats-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-box {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .stat-number {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    /* Table Toolbar */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-tabs {
+      display: flex;
+      background: #F1F5F9;
+      padding: 3px;
+      border-radius: var(--radius-unified);
+      border: 1px solid var(--color-border);
+    }
+
+    .table-tab-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .table-tab-btn.active {
+      background: #FFFFFF;
+      color: var(--color-accent-black);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Queue Table */
+    .queue-table-container {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      overflow-x: auto;
+      box-shadow: var(--shadow-card);
+    }
+
+    table.queue-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    table.queue-table th {
+      background: #F8FAFC;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
+    }
+
+    table.queue-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #F1F5F9;
+      color: var(--color-accent-black);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    table.queue-table tr:hover {
+      background-color: #FAFAFC;
+    }
+
+    .token-chip {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .urgent-row {
+      background-color: #FFFBEB !important;
+    }
+
+    /* Action Buttons in Row */
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-row-action {
+      height: 30px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background: #FFFFFF;
+      color: var(--color-accent-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-row-action:hover {
+      border-color: var(--color-secondary-blue);
+      color: var(--color-secondary-blue);
+    }
+
+    .btn-row-action.destructive:hover {
+      border-color: var(--color-error);
+      color: var(--color-error);
+      background: var(--color-error-bg);
+    }
+
+    /* Walk-in Drawer / Modal */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 2500;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .drawer-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 440px;
+      height: 100%;
+      padding: var(--space-6);
+      box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      animation: drawerSlide 0.25s ease-out;
+    }
+
+    @keyframes drawerSlide {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky State Simulator Bar -->
+  <aside class="state-controller-bar" aria-label="Interactive State Controller">
+    <div class="title">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;"></span>
+      <strong>Screen 5: Reception Queue & Triage Console</strong>
+      <span class="badge badge-amber">Reception Tier</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div class="pill-group" title="Switch UI Simulation States">
+        <span style="font-size: 11px; color: #94A3B8; padding-left: 6px;">STATE:</span>
+        <button class="state-btn active" id="state-normal-btn" onclick="setReceptionState('normal')">Live Table</button>
+        <button class="state-btn" id="state-loading-btn" onclick="setReceptionState('loading')">Loading Skeleton</button>
+        <button class="state-btn" id="state-empty-btn" onclick="setReceptionState('empty')">Empty Queue</button>
+        <button class="state-btn" id="state-error-btn" onclick="setReceptionState('error')">Action Error</button>
+      </div>
+
+      <div class="pill-group">
+        <a href="4-queue.html" class="state-btn" style="text-decoration:none;">← Screen 4</a>
+        <a href="6-doctor.html" class="state-btn" style="text-decoration:none;">Screen 6 →</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <a href="1-auth.html" class="header-brand">
+      <div class="header-logo-icon">Q</div>
+      <strong style="font-family: var(--font-heading); font-size: 18px;">QureFlow</strong>
+      <span style="color:var(--color-border); margin:0 4px;">|</span>
+      <span style="font-size: 14px; font-weight: 500; color:var(--color-accent-muted);">Reception Desk</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="admin-pill">
+        <span>🏥 Apollo Health Hub — Main OPD</span>
+      </div>
+      <span class="badge badge-green">● Syncing Live</span>
+    </div>
+  </header>
+
+  <!-- Action Error Toast Alert -->
+  <div id="reception-alert" style="display:none; max-width: 1200px; margin: 16px auto -8px; padding: 0 24px;">
+    <div class="alert alert-error" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>⚠️ Server synchronization timeout: Unable to update Token #A-13 status. Re-fetching queue...</span>
+      <button class="btn btn-ghost" style="color:var(--color-error); font-size:12px; height:28px;" onclick="hideAlert()">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Main Viewport Canvas -->
+  <main class="reception-layout">
+
+    <!-- 4 Stats Strip -->
+    <section class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-number" id="count-waiting" style="color:var(--color-secondary-blue);">8</div>
+        <div class="stat-label">In Physical Queue</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="count-serving" style="color:var(--color-accent-black);">2</div>
+        <div class="stat-label">Active in Consult</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="count-done" style="color:var(--color-success);">15</div>
+        <div class="stat-label">Completed Today</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="count-noshow" style="color:var(--color-error);">2</div>
+        <div class="stat-label">No-Shows / Cancelled</div>
+      </div>
+    </section>
+
+    <!-- Table Toolbar with ONE Primary CTA -->
+    <section class="table-toolbar">
+      
+      <!-- Filter Tabs -->
+      <div class="table-tabs" role="tablist">
+        <button class="table-tab-btn active" onclick="filterQueue('ALL')">All Arrived (8)</button>
+        <button class="table-tab-btn" onclick="filterQueue('DR_SHARMA')">Dr. Sharma (5)</button>
+        <button class="table-tab-btn" onclick="filterQueue('DR_PATEL')">Dr. Patel (3)</button>
+        <button class="table-tab-btn" onclick="filterQueue('UNCHECKED')">Scheduled Not Arrived (4)</button>
+      </div>
+
+      <!-- THE ONE PRIMARY ACTION (CTA) -->
+      <button class="btn btn-primary" id="add-walkin-cta" onclick="openWalkInDrawer()">
+        <span>+ Add Walk-in Patient</span>
+      </button>
+
+    </section>
+
+    <!-- Real-time Queue Data Table -->
+    <section class="queue-table-container" id="table-container">
+      <table class="queue-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Patient Name</th>
+            <th>Type</th>
+            <th>Arrival</th>
+            <th>Assigned Doctor</th>
+            <th>Live Status</th>
+            <th style="text-align: right;">Queue Actions</th>
+          </tr>
+        </thead>
+        <tbody id="queue-tbody">
+          
+          <!-- Row 1 (Currently with Doctor) -->
+          <tr style="background:#F0FDF4;">
+            <td><span class="token-chip" style="background:#16A34A;">#A-11</span></td>
+            <td><strong>Amit Mehra</strong><br><span class="text-small" style="color:var(--color-accent-muted);">+91 98112 34567</span></td>
+            <td><span class="badge" style="background:#F1F5F9; color:#475569;">Booked</span></td>
+            <td>10:48 AM</td>
+            <td>Dr. Rajesh Sharma</td>
+            <td><span class="badge badge-green">● In Consultation</span></td>
+            <td style="text-align: right;">
+              <span class="text-small" style="color:var(--color-success); font-weight:600;">Active in Room 102</span>
+            </td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr>
+            <td><span class="token-chip">#A-12</span></td>
+            <td><strong>Sunita Rao</strong><br><span class="text-small" style="color:var(--color-accent-muted);">+91 99201 88312</span></td>
+            <td><span class="badge badge-amber">Walk-in</span></td>
+            <td>10:52 AM</td>
+            <td>Dr. Rajesh Sharma</td>
+            <td><span class="badge badge-blue">● 1st in Line</span></td>
+            <td style="text-align: right;">
+              <div class="row-actions" style="justify-content: flex-end;">
+                <button class="btn-row-action" title="Prioritize / Move Up" onclick="prioritizeToken('A-12')">⬆ Prioritize</button>
+                <button class="btn-row-action destructive" title="Mark No-Show" onclick="markNoShow('A-12')">No-Show</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3 (Urgent Triage Case) -->
+          <tr class="urgent-row">
+            <td><span class="token-chip" style="background:#DC2626;">#A-13</span></td>
+            <td><strong>Karan Johar (High Fever)</strong><br><span class="text-small" style="color:var(--color-accent-muted);">+91 98711 00293</span></td>
+            <td><span class="badge badge-red">Urgent Walk-in</span></td>
+            <td>10:55 AM</td>
+            <td>Dr. Rajesh Sharma</td>
+            <td><span class="badge badge-red">● Triage Priority</span></td>
+            <td style="text-align: right;">
+              <div class="row-actions" style="justify-content: flex-end;">
+                <button class="btn-row-action" onclick="prioritizeToken('A-13')">⬆ Top of Queue</button>
+                <button class="btn-row-action destructive" onclick="markNoShow('A-13')">Cancel</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4 (Screen 4 User) -->
+          <tr style="background:#EFF6FF;">
+            <td><span class="token-chip" style="background:var(--color-secondary-blue);">#A-14</span></td>
+            <td><strong>Rahul Verma (You / Patient)</strong><br><span class="text-small" style="color:var(--color-accent-muted);">+91 98765 43210</span></td>
+            <td><span class="badge" style="background:#F1F5F9; color:#475569;">Booked</span></td>
+            <td>11:00 AM</td>
+            <td>Dr. Rajesh Sharma</td>
+            <td><span class="badge badge-blue">● 3rd in Line</span></td>
+            <td style="text-align: right;">
+              <div class="row-actions" style="justify-content: flex-end;">
+                <button class="btn-row-action" onclick="prioritizeToken('A-14')">⬆ Move Up</button>
+                <button class="btn-row-action destructive" onclick="markNoShow('A-14')">No-Show</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5 -->
+          <tr>
+            <td><span class="token-chip">#B-04</span></td>
+            <td><strong>Neha Kapoor</strong><br><span class="text-small" style="color:var(--color-accent-muted);">+91 97182 44920</span></td>
+            <td><span class="badge badge-amber">Walk-in</span></td>
+            <td>11:02 AM</td>
+            <td>Dr. Priya Patel</td>
+            <td><span class="badge badge-blue">● 1st in Line</span></td>
+            <td style="text-align: right;">
+              <div class="row-actions" style="justify-content: flex-end;">
+                <button class="btn-row-action" onclick="prioritizeToken('B-04')">⬆ Prioritize</button>
+                <button class="btn-row-action destructive" onclick="markNoShow('B-04')">No-Show</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ZERO / EMPTY STATE (Hidden by default) -->
+    <div id="empty-reception-view" class="card" style="display:none; text-align:center; padding: 64px 24px;">
+      <div style="font-size: 40px; margin-bottom: 12px;">📋</div>
+      <h3 style="font-size: 18px; margin-bottom: 6px;">Queue is Completely Empty</h3>
+      <p class="body-text" style="max-width: 400px; margin: 0 auto 20px;">
+        There are currently no patients checked into the physical queue. Walk-ins registered or QR check-ins will appear here instantly.
+      </p>
+      <button class="btn btn-primary" onclick="openWalkInDrawer()">
+        + Register Walk-in Patient
+      </button>
+    </div>
+
+  </main>
+
+  <!-- WALK-IN DRAWER MODAL -->
+  <div class="drawer-overlay" id="walkin-drawer" style="display:none;">
+    <div class="drawer-card">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
+          <h2 style="font-size: 20px;">Add Walk-in Patient</h2>
+          <button class="btn btn-ghost" style="padding:4px 8px; font-size:18px;" onclick="closeWalkInDrawer()">✕</button>
+        </div>
+        <p class="body-text" style="font-size:13px; margin-bottom:var(--space-4);">
+          Issue an instant physical token for patients arriving without prior booking.
+        </p>
+
+        <form id="walkin-form" onsubmit="handleWalkInSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="wi-name">Patient Full Name</label>
+            <input type="text" id="wi-name" class="form-input" placeholder="e.g. Vikram Batra" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="wi-phone">Mobile Number</label>
+            <input type="tel" id="wi-phone" class="form-input" placeholder="10-digit mobile number" maxlength="10" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="wi-doctor">Assign Doctor</label>
+            <select id="wi-doctor" class="form-select">
+              <option value="Dr. Rajesh Sharma">Dr. Rajesh Sharma (General Medicine • Room 102)</option>
+              <option value="Dr. Priya Patel">Dr. Priya Patel (Pediatrics • Room 104)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Triage Priority</label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="wi-urgent" style="width:16px; height:16px;" />
+              <span>Mark as <strong>Urgent Case</strong> (Bypasses standard queue position)</span>
+            </label>
+          </div>
+        </form>
+      </div>
+
+      <div>
+        <button type="submit" form="walkin-form" class="btn btn-primary btn-block" style="margin-bottom:8px;">
+          Generate Walk-in Token
+        </button>
+        <button type="button" class="btn btn-ghost btn-block" onclick="closeWalkInDrawer()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/5-reception.js"></script>
+</body>
+</html>

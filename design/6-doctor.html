@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QureFlow — Screen 6: Doctor Consultation & Vitals Desk</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Screen 6 Layout (Doctor Clinical Console) */
+    .app-header {
+      background: var(--color-primary-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-accent-black);
+    }
+
+    .header-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--color-accent-black);
+      color: #FFFFFF;
+      border-radius: var(--radius-unified);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .doctor-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-6) 80px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .doctor-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Active Encounter Hero Banner */
+    .encounter-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+      margin-bottom: var(--space-6);
+      position: relative;
+    }
+
+    .encounter-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--color-success);
+    }
+
+    .encounter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F8FAFC;
+      border: 1px solid var(--color-border);
+      padding: 6px 14px;
+      border-radius: var(--radius-unified);
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-accent-black);
+    }
+
+    /* Quick Vitals Recording Grid */
+    .vitals-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+      margin-bottom: var(--space-6);
+    }
+
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    @media (max-width: 580px) {
+      .vitals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .vital-unit-addon {
+      position: absolute;
+      right: 12px;
+      font-size: 12px;
+      color: var(--color-accent-muted);
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* Up-Next Patient Queue Drawer/Card */
+    .upnext-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+    }
+
+    .upnext-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      margin-bottom: 8px;
+      background: #FAFAFC;
+      transition: all 0.15s ease;
+    }
+
+    .upnext-item:hover {
+      background: #F1F5F9;
+      border-color: var(--color-secondary-blue);
+    }
+
+    .upnext-item.urgent {
+      background: #FFFBEB;
+      border-color: #FDE68A;
+    }
+
+    /* Doctor Availability Switcher */
+    .doc-status-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: var(--radius-unified);
+    }
+
+    .doc-status-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-accent-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .doc-status-btn.active {
+      background: #FFFFFF;
+      color: var(--color-accent-black);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky State Simulator Bar -->
+  <aside class="state-controller-bar" aria-label="Interactive State Controller">
+    <div class="title">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;"></span>
+      <strong>Screen 6: Doctor Consultation & Vitals Desk</strong>
+      <span class="badge badge-green">Clinical Tier</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div class="pill-group" title="Switch UI Simulation States">
+        <span style="font-size: 11px; color: #94A3B8; padding-left: 6px;">STATE:</span>
+        <button class="state-btn active" id="state-normal-btn" onclick="setDoctorState('normal')">Active Consult</button>
+        <button class="state-btn" id="state-loading-btn" onclick="setDoctorState('loading')">Advancing Queue</button>
+        <button class="state-btn" id="state-empty-btn" onclick="setDoctorState('empty')">Queue Clear</button>
+        <button class="state-btn" id="state-error-btn" onclick="setDoctorState('error')">Sync Error</button>
+      </div>
+
+      <div class="pill-group">
+        <a href="5-reception.html" class="state-btn" style="text-decoration:none;">← Screen 5</a>
+        <a href="1-auth.html" class="state-btn" style="text-decoration:none;">Screen 1 →</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <a href="1-auth.html" class="header-brand">
+      <div class="header-logo-icon">Q</div>
+      <strong style="font-family: var(--font-heading); font-size: 18px;">QureFlow</strong>
+      <span style="color:var(--color-border); margin:0 4px;">|</span>
+      <span style="font-size: 14px; font-weight: 500; color:var(--color-accent-muted);">Dr. Rajesh Sharma (Room 102)</span>
+    </a>
+    
+    <div style="display:flex; align-items:center; gap:12px;">
+      <!-- Doctor Mode Toggle -->
+      <div class="doc-status-toggle">
+        <button class="doc-status-btn active" id="btn-status-active" onclick="toggleDoctorAvailability('ACTIVE')">
+          ● Ready / Active
+        </button>
+        <button class="doc-status-btn" id="btn-status-break" onclick="toggleDoctorAvailability('BREAK')">
+          ☕ 10m Break
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error Alert Banner -->
+  <div id="doctor-error-alert" style="display:none; max-width: 1100px; margin: 16px auto -8px; padding: 0 24px;">
+    <div class="alert alert-error" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>⚠️ Network timeout: Vitals cached locally. Click to retry sync before advancing to the next patient.</span>
+      <button class="btn btn-ghost" style="color:var(--color-error); font-size:12px; height:28px;" onclick="hideDocAlert()">Retry</button>
+    </div>
+  </div>
+
+  <!-- Main Viewport Canvas -->
+  <main class="doctor-layout">
+
+    <!-- LEFT COLUMN: Active Encounter & Vitals Entry -->
+    <section id="active-encounter-view">
+
+      <!-- Active Patient Card -->
+      <div class="encounter-card" id="encounter-card">
+        <div class="encounter-header">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span class="badge badge-green">IN CONSULTATION (CHECK_UP)</span>
+              <span class="badge" style="background:#F1F5F9; color:#475569;">Booked Visit</span>
+            </div>
+            <h1 style="font-size: 26px; margin-bottom: 2px;" id="patient-name-display">Amit Mehra</h1>
+            <p class="body-text" style="font-size:13px;" id="patient-meta-display">Male, 34 yrs • ID: #P-8921 • Reason: Seasonal Cough & Fever</p>
+          </div>
+
+          <div style="text-align: right;">
+            <div class="text-small" style="color:var(--color-accent-muted); margin-bottom:4px;">TOKEN NUMBER</div>
+            <div style="font-family:var(--font-heading); font-size:32px; font-weight:700; color:var(--color-secondary-blue);" id="patient-token-display">#A-11</div>
+            <div class="timer-badge" id="timer-box">
+              ⏱️ <span id="live-consult-timer">08:42</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#F8FAFC; border-radius:var(--radius-unified); padding:10px 14px; font-size:12px; color:var(--color-accent-muted);">
+          Arrival: 10:48 AM • Scheduled: 10:30 AM • First visit to clinic
+        </div>
+      </div>
+
+      <!-- Quick Vitals Form -->
+      <div class="vitals-card">
+        <h3 style="font-size: 16px; margin-bottom: var(--space-4); display:flex; justify-content:space-between; align-items:center;">
+          <span>Clinical Vitals & Measurements</span>
+          <span class="text-small" style="color:var(--color-secondary-blue);">Recorded into visit record</span>
+        </h3>
+
+        <div class="vitals-grid">
+          
+          <!-- Blood Pressure -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="vit-bp">Blood Pressure</label>
+            <div class="input-wrapper">
+              <input type="text" id="vit-bp" class="form-input" placeholder="120/80" value="124/82" />
+              <span class="vital-unit-addon">mmHg</span>
+            </div>
+          </div>
+
+          <!-- Blood Sugar -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="vit-sugar">Random Blood Sugar</label>
+            <div class="input-wrapper">
+              <input type="number" id="vit-sugar" class="form-input" placeholder="100" value="98" />
+              <span class="vital-unit-addon">mg/dL</span>
+            </div>
+          </div>
+
+          <!-- Body Weight -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="vit-weight">Body Weight</label>
+            <div class="input-wrapper">
+              <input type="number" id="vit-weight" class="form-input" placeholder="70" value="72.5" />
+              <span class="vital-unit-addon">kg</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Clinical Notes Field -->
+        <div class="form-group" style="margin-top:var(--space-4); margin-bottom:var(--space-4);">
+          <label class="form-label" for="vit-notes">Consultation Notes / Diagnosis</label>
+          <textarea id="vit-notes" class="form-input" style="height:72px; padding:10px 14px; resize:none;" placeholder="Enter diagnosis, prescription summary or recommendations...">Acute upper respiratory infection. Advised steam inhalation and paracetamol 650mg SOS.</textarea>
+        </div>
+
+        <!-- THE ONE PRIMARY ACTION (CTA) -->
+        <button id="primary-complete-cta" class="btn btn-primary btn-block" style="height:48px;" onclick="handleCompleteConsultation()">
+          <span id="complete-cta-text">Complete Consult & Call Next (#A-12) →</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: Up-Next Queue Preview -->
+    <aside>
+      <div class="upnext-card">
+        <h3 style="font-size: 15px; margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+          <span>Up Next in Line</span>
+          <span class="badge badge-blue" id="upnext-count">3 Waiting</span>
+        </h3>
+
+        <div id="upnext-list">
+          
+          <!-- Next Patient 1 -->
+          <div class="upnext-item" id="next-1">
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">Sunita Rao</div>
+              <div class="text-small" style="color:var(--color-accent-muted);">Walk-in • Wait: 18m</div>
+            </div>
+            <span class="token-chip" style="font-size:12px;">#A-12</span>
+          </div>
+
+          <!-- Next Patient 2 (Urgent Triage) -->
+          <div class="upnext-item urgent" id="next-2">
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color:#B45309;">Karan Johar (Priority)</div>
+              <div class="text-small" style="color:#B45309;">High Fever • Urgent Walk-in</div>
+            </div>
+            <span class="token-chip" style="background:#DC2626; font-size:12px;">#A-13</span>
+          </div>
+
+          <!-- Next Patient 3 (Screen 4 User) -->
+          <div class="upnext-item" id="next-3">
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">Rahul Verma</div>
+              <div class="text-small" style="color:var(--color-accent-muted);">Booked • Slot: 11:00 AM</div>
+            </div>
+            <span class="token-chip" style="background:var(--color-secondary-blue); font-size:12px;">#A-14</span>
+          </div>
+
+        </div>
+
+        <div style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border); font-size: 12px; color: var(--color-accent-muted); line-height: 1.4;">
+          ⚡ Completing this visit updates the live ETA and triggers WebSocket notifications for all queued patients.
+        </div>
+      </div>
+    </aside>
+
+    <!-- ZERO / EMPTY STATE (Queue Clear) -->
+    <div id="empty-doctor-view" class="card" style="display:none; text-align:center; padding: 64px 24px; grid-column: 1 / -1;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
+      <h2 style="font-size: 22px; margin-bottom: 6px;">Queue is Completely Clear!</h2>
+      <p class="body-text" style="max-width: 440px; margin: 0 auto 20px;">
+        All scheduled and walk-in patients for today's OPD have been seen. New check-ins at reception will alert you automatically.
+      </p>
+      <button class="btn btn-secondary" onclick="setDoctorState('normal')">
+        Restore Demo Patient (#A-11)
+      </button>
+    </div>
+
+  </main>
+
+  <script src="js/6-doctor.js"></script>
+</body>
+</html>

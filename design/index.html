@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QureFlow — MVP Design System & Screen Gallery</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hub-layout {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6) 100px;
+    }
+
+    .hub-header {
+      margin-bottom: var(--space-8);
+      text-align: center;
+    }
+
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .hub-screen-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-unified);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .hub-screen-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-elevated);
+      border-color: var(--color-secondary-blue);
+    }
+
+    .card-top {
+      margin-bottom: var(--space-4);
+    }
+
+    .screen-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-secondary-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .screen-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-accent-black);
+      margin-bottom: 8px;
+    }
+
+    .screen-desc {
+      font-size: 13px;
+      color: var(--color-accent-muted);
+      line-height: 1.5;
+    }
+
+    .card-meta {
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="hub-layout">
+    
+    <header class="hub-header">
+      <div class="badge badge-blue" style="margin-bottom:12px;">QureFlow MVP Design Architecture</div>
+      <h1 style="font-size:36px; margin-bottom:10px;">Screen Gallery & Prototype Hub</h1>
+      <p class="body-text" style="max-width: 600px; margin: 0 auto;">
+        Interactive implementation of all 6 MVP screens for QureFlow based on the UI/UX architecture and minimal design system guidelines.
+      </p>
+    </header>
+
+    <div class="hub-grid">
+
+      <!-- Screen 1 -->
+      <a href="1-auth.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 01</div>
+          <div class="screen-title">Authentication & Role Gateway</div>
+          <p class="screen-desc">
+            Unified OTP verification for patients and credentialed sign-in for clinic doctors and receptionists.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge" style="background:#F1F5F9; color:#475569;">Guest Tier</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 1 →</strong>
+        </div>
+      </a>
+
+      <!-- Patient Home Dashboard -->
+      <a href="patient-home.html" class="hub-screen-card" style="border-color: var(--color-secondary-blue);">
+        <div class="card-top">
+          <div class="screen-number" style="color:var(--color-success);">Patient Hub</div>
+          <div class="screen-title">Patient Home Dashboard</div>
+          <p class="screen-desc">
+            Dynamic active context card (changes between in-queue token, upcoming booking, or empty), quick actions, and duty doctors.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-green">Patient Home</span>
+          <strong style="color:var(--color-secondary-blue);">Open Patient Home →</strong>
+        </div>
+      </a>
+
+      <!-- Screen 2 -->
+      <a href="2-booking.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 02</div>
+          <div class="screen-title">Doctor Discovery & Slot Booking</div>
+          <p class="screen-desc">
+            Physician profile, 7-day horizontal calendar carousel, session slot chips, and appointment reservation.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-blue">Patient User</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 2 →</strong>
+        </div>
+      </a>
+
+      <!-- Screen 3 -->
+      <a href="3-checkin.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 03</div>
+          <div class="screen-title">QR Arrival Check-In & Token Pass</div>
+          <p class="screen-desc">
+            Validates physical arrival at clinic within the ±15 min window using camera QR scan to mint active queue token.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-blue">Patient User</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 3 →</strong>
+        </div>
+      </a>
+
+      <!-- Screen 4 -->
+      <a href="4-queue.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 04</div>
+          <div class="screen-title">Patient Live Queue & ETA Tracker</div>
+          <p class="screen-desc">
+            Real-time live queue position, dynamic elastic wait range (ETA), consult lifecycle stepper, and turn alert modal.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-blue">Patient User</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 4 →</strong>
+        </div>
+      </a>
+
+      <!-- Screen 5 -->
+      <a href="5-reception.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 05</div>
+          <div class="screen-title">Reception Queue & Triage Console</div>
+          <p class="screen-desc">
+            Live physical arrival table, walk-in patient generator, priority reordering, and no-show exception handling.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-amber">Reception Staff</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 5 →</strong>
+        </div>
+      </a>
+
+      <!-- Screen 6 -->
+      <a href="6-doctor.html" class="hub-screen-card">
+        <div class="card-top">
+          <div class="screen-number">Screen 06</div>
+          <div class="screen-title">Doctor Consultation & Vitals Desk</div>
+          <p class="screen-desc">
+            Active patient encounter view, live timer, rapid vitals entry (BP, Sugar, Weight), up-next queue, and call-next trigger.
+          </p>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-green">Doctor Provider</span>
+          <strong style="color:var(--color-secondary-blue);">Open Screen 6 →</strong>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+
+</body>
+</html>
